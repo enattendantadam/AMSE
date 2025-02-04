@@ -1,5 +1,6 @@
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -25,10 +26,8 @@ class MyApp extends StatelessWidget {
   }
 }
 
-
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
-
 
   void getNext() {
     current = WordPair.random();
@@ -37,52 +36,148 @@ class MyAppState extends ChangeNotifier {
 
   var favorites = <WordPair>[];
 
-  void toggle_Favorite(){
-    if(favorites.contains(current)){
+  void toggleFavorite() {
+    if (favorites.contains(current)) {
       favorites.remove(current);
-    } else{
+    } else {
       favorites.add(current);
     }
     notifyListeners();
   }
+} // ...
+
+class MyHomePage extends StatefulWidget {
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
+class _MyHomePageState extends State<MyHomePage> {
+  var selectedIndex = 0;
 
-class MyHomePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = GeneratorPage();
+        break;
+      case 1:
+        page = FavoritePage();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+    return LayoutBuilder(builder: (context, constraints) {
+      return Scaffold(
+        body: Row(
+          children: [
+            SafeArea(
+              child: NavigationRail(
+                extended: constraints.maxWidth >= 600,
+                destinations: [
+                  NavigationRailDestination(
+                    icon: Icon(Icons.home),
+                    label: Text('Home'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.favorite),
+                    label: Text('Favorites'),
+                  ),
+                ],
+                selectedIndex: selectedIndex,
+                onDestinationSelected: (value) {
+                  setState(() {
+                    selectedIndex = value;
+                  });
+                  ;
+                },
+              ),
+            ),
+            Expanded(
+              child: Container(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                child: page,
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class FavoritePage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var favorites = appState.favorites;
+
+    return Scaffold(
+      appBar: AppBar(title: Text("Favorites")),
+      body: favorites.isEmpty
+          ? Center(child: Text("No favorites yet"))
+          : GridView.builder(
+              padding: EdgeInsets.all(16),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 4, // Adjust for desired column count
+                childAspectRatio: 8 / 2, // Adjust for preferred card size
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+              ),
+              itemCount: favorites.length,
+              itemBuilder: (context, index) {
+                return favoriteCard(fav: favorites[index]);
+              },
+            ),
+    );
+  }
+}
+
+class GeneratorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
 
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text('A random AWESOME idea:'),
-            BigCard(pair: pair),
-        
-            // ↓ Add this.
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [ElevatedButton(onPressed: appState.toggle_Favorite, child: Text("favourite"))
-                ,
-                ElevatedButton(
-                  onPressed: () {
-                    appState.getNext();
-                  },
-                  child: Text('Next'),
-                ),
-              ],
+    IconData icon;
+    if (appState.favorites.contains(pair)) {
+      icon = Icons.favorite;
+    } else {
+      icon = Icons.favorite_border;
+    }
 
-            ),
-        
-          ],
-        ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          BigCard(pair: pair),
+          SizedBox(height: 10),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  appState.toggleFavorite();
+                },
+                icon: Icon(icon),
+                label: Text('Like'),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  appState.getNext();
+                },
+                child: Text('Next'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
 }
+
+// ...
 
 class BigCard extends StatelessWidget {
   const BigCard({
@@ -94,18 +189,45 @@ class BigCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);   
+    final theme = Theme.of(context);
     final style = theme.textTheme.displayMedium!.copyWith(
       color: theme.colorScheme.onPrimary,
     );
     return Card(
-      color: theme.colorScheme.primary, 
+      color: theme.colorScheme.primary,
       child: Padding(
         padding: const EdgeInsets.all(20),
-                child: Text(
+        child: Text(
           pair.asLowerCase,
           style: style,
           semanticsLabel: "${pair.first} ${pair.second}",
+        ),
+      ),
+    );
+  }
+}
+
+class favoriteCard extends StatelessWidget {
+  const favoriteCard({
+    super.key,
+    required this.fav,
+  });
+
+  final WordPair fav;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final style = theme.textTheme.displayMedium!
+        .copyWith(color: theme.colorScheme.onPrimary, fontSize: 24);
+    return Card(
+      color: theme.colorScheme.primary,
+      child: Padding(
+        padding: const EdgeInsets.all(7),
+        child: Text(
+          fav.asLowerCase,
+          style: style,
+          semanticsLabel: "${fav.first} ${fav.second}",
         ),
       ),
     );
