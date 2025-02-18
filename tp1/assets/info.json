@@ -1,10 +1,19 @@
 {
     "home": [
       {
-        "title": "Sharknado, Enough Said",
-        "description": "A movie about sharks and tornadoes",
+        "title": "Movies",
+        "description": " ",
         "url":"https://www.nanarland.com/media/cache/resolve/front_film_single_cover/uploads/films/5e8b565c69467-sharknado-jaquette.jpg"
-
+      },
+      {
+        "title": "VideoGames",
+        "description": " ",
+        "url":"https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg"
+      },
+      {
+        "title": "Shows",
+        "description": " ",
+        "url":"https://www.nanarland.com/media/cache/resolve/front_film_single_cover/uploads/films/5e8b565c69467-sharknado-jaquette.jpg"
       }
     ],
     "gallery 1": [
