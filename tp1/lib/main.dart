@@ -4,9 +4,7 @@ import '../utils.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  print("🔄 Calling loadJson...");
   await ImageDataManager().loadJson(); // ✅ Ensures JSON is loaded
-  print("✅ JSON Loaded, running app...");
   runApp(const MyApp());
 }
 

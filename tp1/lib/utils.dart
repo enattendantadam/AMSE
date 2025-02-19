@@ -55,6 +55,10 @@ class ImageDataManager {
     if (images != null && index >= 0 && index < images.length) {
       return images[index];
     }
-    return JsonItem.defaultItem(); // Out of range = null
+    return JsonItem.defaultItem(); // si introuvable
+  }
+
+  List<String> getCategoryNames() {
+    return _imageData.keys.toList();
   }
 }

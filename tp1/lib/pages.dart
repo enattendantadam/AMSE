@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:tp1/utils.dart';
 import '../sectionItems.dart';
 
 class MainPage extends StatefulWidget {
@@ -29,14 +30,14 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+    print(ImageDataManager().getCategoryNames());
     return Scaffold(
       body: PageView(
-        controller: _pageController,
-        physics: NeverScrollableScrollPhysics(), // Prevents swiping
+        controller: _pageController, // Prevents swiping
         children: [
-          SectionPage(title: "Movies"),
-          SectionPage(title: "TV Shows"),
-          SectionPage(title: "Documentaries"),
+          SectionPage(title: ImageDataManager().getCategoryNames()[1]),
+          SectionPage(title: ImageDataManager().getCategoryNames()[2]),
+          SectionPage(title: ImageDataManager().getCategoryNames()[3]),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
@@ -44,9 +45,9 @@ class _MainPageState extends State<MainPage> {
         onTap: _onItemTapped,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
-          BottomNavigationBarItem(icon: Icon(Icons.tv), label: 'TV Shows'),
+          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'TV Shows'),
           BottomNavigationBarItem(
-              icon: Icon(Icons.fiber_dvr), label: 'Documentaries'),
+              icon: Icon(Icons.movie), label: 'Documentaries'),
         ],
       ),
     );
