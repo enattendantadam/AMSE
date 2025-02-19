@@ -1,98 +1,96 @@
 import 'package:flutter/material.dart';
 import '../sectionItems.dart';
 
-class SectionPage extends StatefulWidget {
-  final String title;
+class MainPage extends StatefulWidget {
+  final int initialIndex;
 
-  const SectionPage({super.key, required this.title});
+  MainPage({super.key, this.initialIndex = 0});
 
   @override
-  _SectionPageState createState() => _SectionPageState();
+  _MainPageState createState() => _MainPageState();
 }
 
-class _SectionPageState extends State<SectionPage> {
+class _MainPageState extends State<MainPage> {
   final PageController _pageController = PageController();
+  int _selectedIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      _pageController.jumpToPage(index);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: PageView(
+        controller: _pageController,
+        physics: NeverScrollableScrollPhysics(), // Prevents swiping
+        children: [
+          SectionPage(title: "Movies"),
+          SectionPage(title: "TV Shows"),
+          SectionPage(title: "Documentaries"),
+        ],
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        items: const [
+          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
+          BottomNavigationBarItem(icon: Icon(Icons.tv), label: 'TV Shows'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.fiber_dvr), label: 'Documentaries'),
+        ],
+      ),
+    );
+  }
+}
+
+class SectionPage extends StatelessWidget {
+  final String title;
+
+  SectionPage({super.key, required this.title});
 
   final List<MediaItem> mediaItems = [
     MediaItem(
-      title: "Example Movie 1",
+      title: "Example Item 1",
       description: "A thrilling adventure about...",
       imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
     ),
     MediaItem(
-      title: "Example Movie 2",
+      title: "Example Item 2",
       description: "A fascinating drama about...",
       imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
     ),
   ];
 
-  int _currentIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(title),
         backgroundColor: Colors.deepPurple,
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: () {
-              print("refresh");
+              // Implement refresh functionality here
             },
           ),
         ],
       ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
+      body: ListView.builder(
+        itemCount: mediaItems.length,
+        itemBuilder: (context, index) {
+          return MediaItemWidget(mediaItem: mediaItems[index]);
         },
-        children: [
-          ListView.builder(
-            itemCount: mediaItems.length,
-            itemBuilder: (context, index) {
-              return MediaItemWidget(mediaItem: mediaItems[index]);
-            },
-          ),
-          ListView.builder(
-            itemCount: mediaItems.length,
-            itemBuilder: (context, index) {
-              return MediaItemWidget(mediaItem: mediaItems[index]);
-            },
-          ),
-          ListView.builder(
-            itemCount: mediaItems.length,
-            itemBuilder: (context, index) {
-              return MediaItemWidget(mediaItem: mediaItems[index]);
-            },
-          ),
-        ],
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          _pageController.jumpToPage(index);
-        },
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.movie),
-            label: 'Movies',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.tv),
-            label: 'TV Shows',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fiber_dvr),
-            label: 'Documentaries',
-          ),
-        ],
       ),
     );
   }
