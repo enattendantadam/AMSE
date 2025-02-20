@@ -30,10 +30,9 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    print(ImageDataManager().getCategoryNames());
     return Scaffold(
       body: PageView(
-        controller: _pageController, // Prevents swiping
+        controller: _pageController,
         children: [
           MoviePage(),
           VideoGamePage(),
@@ -73,7 +72,6 @@ class _SectionPageState extends State<SectionPage> {
   }
 
   void _initializeMediaItems() {
-    // This method should be overridden in subclasses
     mediaItems = [
       MediaItem(
         title: "Example Item 1",
@@ -99,7 +97,7 @@ class _SectionPageState extends State<SectionPage> {
             icon: const Icon(Icons.refresh),
             onPressed: () {
               setState(() {
-                _initializeMediaItems(); // Call initialization method on refresh
+                _initializeMediaItems();
               });
             },
           ),
@@ -123,27 +121,56 @@ class VideoGamePage extends SectionPage {
 }
 
 class _VideoGamePageState extends _SectionPageState {
+  List<Game> games = [];
+
   @override
-  void _initializeMediaItems() {
-    mediaItems = [
-      MediaItem(
-        title: "Example VG 1",
-        description: "A thrilling adventure about...",
-        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
-      ),
-      MediaItem(
-        title: "Example VG 2",
-        description: "A fascinating drama about...",
-        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
-      ),
-      // Add more video game items here
-    ];
+  void initState() {
+    super.initState();
+    _fetchGames(); // Call fetch games in initState
+  }
+
+  Future<void> _fetchGames() async {
+    try {
+      final igdbService = IgdbService();
+      games = await igdbService.getGames();
+      _updateMediaItems(); // Update mediaItems after fetching
+    } catch (e) {
+      print('Error fetching games: $e');
+      //ScaffoldMessenger.of(context).showSnackBar(
+      //  SnackBar(content: Text('Error loading games: $e')),
+      //);
+      games = [
+        Game(
+          id: 0,
+          name: "Example VG 1",
+          summary: "A thrilling adventure about...",
+          coverUrl:
+              "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
+        ),
+      ];
+    } finally {
+      _updateMediaItems();
+    }
+  }
+
+  void _updateMediaItems() {
+    mediaItems = games.map((game) {
+      return MediaItem(
+        title: game.name,
+        description: game.summary.isNotEmpty ? game.summary : game.storyline,
+        imageUrl: game.coverUrl.isNotEmpty
+            ? game.coverUrl
+            : "https://gssc.esa.int/navipedia/images/a/a9/Example.jpg",
+      );
+    }).toList();
+    if (mounted) {
+      setState(() {});
+    }
   }
 }
 
 class MoviePage extends SectionPage {
   MoviePage({super.key}) : super(title: "Movies");
-
   @override
   _MoviePageState createState() => _MoviePageState();
 }
