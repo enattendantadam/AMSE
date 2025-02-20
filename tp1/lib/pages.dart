@@ -35,8 +35,8 @@ class _MainPageState extends State<MainPage> {
       body: PageView(
         controller: _pageController, // Prevents swiping
         children: [
-          SectionPage(title: ImageDataManager().getCategoryNames()[1]),
-          SectionPage(title: ImageDataManager().getCategoryNames()[2]),
+          MoviePage(),
+          VideoGamePage(),
           SectionPage(title: ImageDataManager().getCategoryNames()[3]),
         ],
       ),
@@ -54,35 +54,53 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
-class SectionPage extends StatelessWidget {
+class SectionPage extends StatefulWidget {
   final String title;
 
-  SectionPage({super.key, required this.title});
+  const SectionPage({super.key, required this.title});
 
-  final List<MediaItem> mediaItems = [
-    MediaItem(
-      title: "Example Item 1",
-      description: "A thrilling adventure about...",
-      imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
-    ),
-    MediaItem(
-      title: "Example Item 2",
-      description: "A fascinating drama about...",
-      imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
-    ),
-  ];
+  @override
+  State<SectionPage> createState() => _SectionPageState();
+}
+
+class _SectionPageState extends State<SectionPage> {
+  List<MediaItem> mediaItems = []; // Initialize as empty
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeMediaItems(); // Call initialization method
+  }
+
+  void _initializeMediaItems() {
+    // This method should be overridden in subclasses
+    mediaItems = [
+      MediaItem(
+        title: "Example Item 1",
+        description: "A thrilling adventure about...",
+        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
+      ),
+      MediaItem(
+        title: "Example Item 2",
+        description: "A fascinating drama about...",
+        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(title),
+        title: Text(widget.title),
         backgroundColor: Colors.deepPurple,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             onPressed: () {
-              // Implement refresh functionality here
+              setState(() {
+                _initializeMediaItems(); // Call initialization method on refresh
+              });
             },
           ),
         ],
@@ -94,5 +112,57 @@ class SectionPage extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+class VideoGamePage extends SectionPage {
+  VideoGamePage({super.key}) : super(title: "Video Games");
+
+  @override
+  _VideoGamePageState createState() => _VideoGamePageState();
+}
+
+class _VideoGamePageState extends _SectionPageState {
+  @override
+  void _initializeMediaItems() {
+    mediaItems = [
+      MediaItem(
+        title: "Example VG 1",
+        description: "A thrilling adventure about...",
+        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
+      ),
+      MediaItem(
+        title: "Example VG 2",
+        description: "A fascinating drama about...",
+        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
+      ),
+      // Add more video game items here
+    ];
+  }
+}
+
+class MoviePage extends SectionPage {
+  MoviePage({super.key}) : super(title: "Movies");
+
+  @override
+  _MoviePageState createState() => _MoviePageState();
+}
+
+class _MoviePageState extends _SectionPageState {
+  @override
+  void _initializeMediaItems() {
+    mediaItems = [
+      MediaItem(
+        title: "Example movie 1",
+        description: "A thrilling adventure about...",
+        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
+      ),
+      MediaItem(
+        title: "Example movie 2",
+        description: "A fascinating drama about...",
+        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
+      ),
+      // Add more video game items here
+    ];
   }
 }
