@@ -85,7 +85,7 @@ class Game {
     required this.id,
     this.coverUrl = defaultUrl,
     this.firstReleaseDate = "2003-06-14",
-    this.genres = const ["N/A"], // Use const [] for empty lists
+    this.genres = const ["N/A"],
     this.involvedCompanies = const ["N/A"],
     this.keywords = const ["N/A"],
     required this.name,
@@ -95,7 +95,7 @@ class Game {
     this.summary = "",
     this.storyline = "",
     this.themes = const ["N/A"],
-    this.totalRating = -1.0, // Default -1.0 for unrated
+    this.totalRating = -1.0,
     this.totalRatingCount = -1,
   });
 
@@ -109,8 +109,8 @@ class Game {
             ? List<String>.from(json['genres'])
             : const [],
         involvedCompanies: json['involved_companies'] != null
-            ? List<String>.from(json['involved_companies']
-                .map((ic) => ic['company_name'])) // Extract company name
+            ? List<String>.from(
+                json['involved_companies'].map((ic) => ic['company_name']))
             : const [],
         keywords: json['keywords'] != null
             ? List<String>.from(json['keywords'])
@@ -137,8 +137,7 @@ class Game {
       );
     } catch (e) {
       print("Error converting JSON to Game: $e");
-      print(
-          "Problematic JSON: ${jsonEncode(json)}"); // Print the JSON for debugging
+      print("Problematic JSON: ${jsonEncode(json)}");
 
       return Game(
         // Return a default Game object on error

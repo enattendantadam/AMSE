@@ -41,8 +41,11 @@ class MediaItemWidget extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(mediaItem.imageUrl,
-                  width: 100, height: 100, fit: BoxFit.cover),
+              child: Image.network(
+                  mediaItem.imageUrl.replaceAll("t_thumb", "t_cover_big"),
+                  width: 100,
+                  height: 100,
+                  fit: BoxFit.cover),
             ),
             const SizedBox(width: 10),
             Expanded(
@@ -79,7 +82,11 @@ class DetailPage extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            Image.network(mediaItem.imageUrl),
+            Image.network(
+              mediaItem.imageUrl.replaceAll("t_thumb", "t_cover_big"),
+              width: 264,
+              height: 352,
+            ),
             const SizedBox(height: 10),
             Text(mediaItem.title,
                 style:

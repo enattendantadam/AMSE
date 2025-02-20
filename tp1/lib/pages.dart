@@ -15,33 +15,32 @@ class _MainPageState extends State<MainPage> {
   final PageController _pageController = PageController();
   int _selectedIndex = 0;
 
+  final List<Widget> _pages = [
+    MoviePage(),
+    VideoGamePage(),
+    SectionPage(title: ImageDataManager().getCategoryNames()[3]),
+  ];
+
   @override
   void initState() {
     super.initState();
     _selectedIndex = widget.initialIndex;
   }
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-      _pageController.jumpToPage(index);
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: PageView(
-        controller: _pageController,
-        children: [
-          MoviePage(),
-          VideoGamePage(),
-          SectionPage(title: ImageDataManager().getCategoryNames()[3]),
-        ],
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: (index) {
+          setState(() {
+            _selectedIndex = index;
+          });
+        },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
           BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'TV Shows'),
@@ -86,6 +85,10 @@ class _SectionPageState extends State<SectionPage> {
     ];
   }
 
+  void _refresh() {
+    return;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,12 +106,22 @@ class _SectionPageState extends State<SectionPage> {
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: mediaItems.length,
-        itemBuilder: (context, index) {
-          return MediaItemWidget(mediaItem: mediaItems[index]);
-        },
-      ),
+      body: Stack(children: [
+        ListView.builder(
+          itemCount: mediaItems.length,
+          itemBuilder: (context, index) {
+            return MediaItemWidget(mediaItem: mediaItems[index]);
+          },
+        ),
+        Positioned(
+          right: 10,
+          bottom: 25,
+          child: FloatingActionButton(
+            onPressed: _refresh,
+            child: Icon(Icons.refresh),
+          ),
+        )
+      ]),
     );
   }
 }
@@ -166,6 +179,12 @@ class _VideoGamePageState extends _SectionPageState {
     if (mounted) {
       setState(() {});
     }
+  }
+
+  @override
+  Future<void> _refresh() async {
+    // Override the refreshData method
+    await _fetchGames(); // Fetch new games
   }
 }
 
