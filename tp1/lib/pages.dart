@@ -12,13 +12,12 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage> {
-  final PageController _pageController = PageController();
   int _selectedIndex = 0;
 
   final List<Widget> _pages = [
     MoviePage(),
     VideoGamePage(),
-    SectionPage(title: ImageDataManager().getCategoryNames()[3]),
+    ComicsPage(),
   ];
 
   @override
@@ -43,9 +42,8 @@ class _MainPageState extends State<MainPage> {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
-          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'TV Shows'),
-          BottomNavigationBarItem(
-              icon: Icon(Icons.movie), label: 'Documentaries'),
+          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Games'),
+          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Comics'),
         ],
       ),
     );
@@ -95,16 +93,6 @@ class _SectionPageState extends State<SectionPage> {
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Colors.deepPurple,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              setState(() {
-                _initializeMediaItems();
-              });
-            },
-          ),
-        ],
       ),
       body: Stack(children: [
         ListView.builder(
@@ -127,7 +115,7 @@ class _SectionPageState extends State<SectionPage> {
 }
 
 class VideoGamePage extends SectionPage {
-  VideoGamePage({super.key}) : super(title: "Video Games");
+  VideoGamePage({super.key}) : super(title: "Games");
 
   @override
   _VideoGamePageState createState() => _VideoGamePageState();
@@ -185,6 +173,72 @@ class _VideoGamePageState extends _SectionPageState {
   Future<void> _refresh() async {
     // Override the refreshData method
     await _fetchGames(); // Fetch new games
+  }
+}
+
+class ComicsPage extends SectionPage {
+  ComicsPage({super.key}) : super(title: "Comics");
+
+  @override
+  _ComicsPageState createState() => _ComicsPageState();
+}
+
+class _ComicsPageState extends _SectionPageState {
+  List<Comic> comics = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchComics(); // Call fetch games in initState
+  }
+
+  Future<void> _fetchComics() async {
+    try {
+      final comicVineService = ComicVineService();
+      comics = await comicVineService.getComics();
+      _updateMediaItems(); // Update mediaItems after fetching
+    } catch (e) {
+      print('Error fetching games: $e');
+      //ScaffoldMessenger.of(context).showSnackBar(
+      //  SnackBar(content: Text('Error loading games: $e')),
+      //);
+      comics = [
+        Comic(
+          id: 0,
+          name: "Example VG 1",
+          description: "A thrilling adventure about...",
+          image:
+              "https://comicvine.gamespot.com/a/uploads/scale_medium/6/66303/3321885-screen%20shot%202013-09-19%20at%2010.24.07%20am.png",
+        ),
+      ];
+    } finally {
+      _updateMediaItems();
+    }
+  }
+
+  void _updateMediaItems() {
+    mediaItems = comics.map((comic) {
+      return ComicItem(
+        title: comic.name,
+        releaseDate: comic.coverDate,
+        htmlDescription: comic.htmlraw,
+        description: comic.deck.isNotEmpty
+            ? "${comic.deck}\n${comic.description}"
+            : comic.description,
+        imageUrl: comic.image.isNotEmpty
+            ? comic.image.replaceAll("square_avatar", "scale_medium")
+            : "https://gssc.esa.int/navipedia/images/a/a9/Example.jpg",
+      );
+    }).toList();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  Future<void> _refresh() async {
+    // Override the refreshData method
+    await _fetchComics(); // Fetch new games
   }
 }
 

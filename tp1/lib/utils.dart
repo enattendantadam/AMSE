@@ -180,3 +180,62 @@ class IgdbService {
     }
   }
 }
+
+class Comic {
+  final int id;
+  final String image;
+  final String coverDate;
+  final String deck;
+  final String description;
+  final String name;
+  final String htmlraw;
+
+  Comic(
+      {required this.id,
+      this.image = defaultUrl,
+      this.coverDate = "2003-06-14",
+      this.deck = "",
+      this.description = "failed to load the description",
+      this.name = "failed to load name",
+      this.htmlraw = "failed to load the description"});
+
+  factory Comic.fromJson(Map<String, dynamic> json) {
+    try {
+      return Comic(
+          id: json['id'],
+          image: json['image'],
+          coverDate: json['cover_date'],
+          deck: json['deck'] ?? "",
+          description: json['n_description'] ?? "no desc",
+          name: json['name'] ?? "no name",
+          htmlraw: json["description"]);
+    } catch (e) {
+      print("Error converting JSON to Comic: $e");
+      print("Problematic JSON: ${jsonEncode(json)}");
+
+      return Comic(
+        // Return a default Game object on error
+        id: 0,
+        name: "Error Loading comic",
+        description: "Error loading comic details.",
+      );
+    }
+  }
+}
+
+class ComicVineService {
+  ComicVineService();
+
+  Future<List<Comic>> getComics() async {
+    final url = Uri.parse('https://menade.me/api/comics');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      print(jsonResponse);
+      return jsonResponse.map((json) => Comic.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load comics: ${response.statusCode}');
+    }
+  }
+}
