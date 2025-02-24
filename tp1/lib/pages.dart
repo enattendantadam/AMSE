@@ -156,12 +156,23 @@ class _VideoGamePageState extends _SectionPageState {
 
   void _updateMediaItems() {
     mediaItems = games.map((game) {
-      return MediaItem(
+      return GameItem(
         title: game.name,
         description: game.summary.isNotEmpty ? game.summary : game.storyline,
-        imageUrl: game.coverUrl.isNotEmpty
-            ? game.coverUrl
-            : "https://gssc.esa.int/navipedia/images/a/a9/Example.jpg",
+        imageUrl: game.coverUrl.replaceAll("t_thumb", "t_cover_big"),
+        id: game.id,
+        coverUrl: game.coverUrl,
+        firstReleaseDate: game.firstReleaseDate,
+        genres: game.genres,
+        involvedCompanies: game.involvedCompanies,
+        keywords: game.keywords,
+        platforms: game.platforms,
+        screenshotUrls: game.screenshotUrls,
+        summary: game.summary,
+        storyline: game.storyline,
+        themes: game.themes,
+        totalRating: game.totalRating,
+        totalRatingCount: game.totalRatingCount,
       );
     }).toList();
     if (mounted) {
@@ -198,7 +209,7 @@ class _ComicsPageState extends _SectionPageState {
       comics = await comicVineService.getComics();
       _updateMediaItems(); // Update mediaItems after fetching
     } catch (e) {
-      print('Error fetching games: $e');
+      print('Error fetching comics: $e');
       //ScaffoldMessenger.of(context).showSnackBar(
       //  SnackBar(content: Text('Error loading games: $e')),
       //);
@@ -244,25 +255,76 @@ class _ComicsPageState extends _SectionPageState {
 
 class MoviePage extends SectionPage {
   MoviePage({super.key}) : super(title: "Movies");
+
   @override
-  _MoviePageState createState() => _MoviePageState();
+  _MoviesPageState createState() => _MoviesPageState();
 }
 
-class _MoviePageState extends _SectionPageState {
+class _MoviesPageState extends _SectionPageState {
+  List<Movie> movies = [];
+
   @override
-  void _initializeMediaItems() {
-    mediaItems = [
-      MediaItem(
-        title: "Example movie 1",
-        description: "A thrilling adventure about...",
-        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
-      ),
-      MediaItem(
-        title: "Example movie 2",
-        description: "A fascinating drama about...",
-        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
-      ),
-      // Add more video game items here
-    ];
+  void initState() {
+    super.initState();
+    _fetchMovies(); // Call fetch games in initState
+  }
+
+  Future<void> _fetchMovies() async {
+    try {
+      final imdbService = ImdbService();
+      movies = await imdbService.getComics();
+      _updateMediaItems(); // Update mediaItems after fetching
+    } catch (e) {
+      print('Error fetching movies: $e');
+      //ScaffoldMessenger.of(context).showSnackBar(
+      //  SnackBar(content: Text('Error loading games: $e')),
+      //);
+      movies = [
+        Movie(
+          image:
+              "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTfE_qrYMBZ_JB8om-34WGaZARhpX26yWRttqIDvn4_7l--UzX8mxKcPrc59IcvTpEA_G8gPA",
+          title: 'Batman the dark knight',
+          year: '2008',
+          runtime: '152 min',
+          genre: 'best',
+          metaScore: '100',
+          overview:
+              'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.',
+          director: 'Christopher Nolan',
+          stars: [
+            "Christian Bale",
+            "Heath Ledger",
+            "Aaron Eckhart",
+            "Michael Caine"
+          ],
+        )
+      ];
+    } finally {
+      _updateMediaItems();
+    }
+  }
+
+  void _updateMediaItems() {
+    mediaItems = movies.map((movie) {
+      return MovieItem(
+          title: movie.title,
+          description: movie.overview,
+          imageUrl: movie.image,
+          year: movie.year,
+          runtime: movie.runtime,
+          genre: movie.genre,
+          metaScore: movie.metaScore,
+          stars: movie.stars,
+          director: movie.director);
+    }).toList();
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  Future<void> _refresh() async {
+    // Override the refreshData method
+    await _fetchMovies(); // Fetch new games
   }
 }

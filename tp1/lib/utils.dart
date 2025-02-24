@@ -74,7 +74,6 @@ class Game {
   final String name;
   final List<String> platforms;
   final List<String> screenshotUrls;
-  final List<SimilarGame> similarGames;
   final String summary;
   final String storyline;
   final List<String> themes;
@@ -91,7 +90,6 @@ class Game {
     required this.name,
     this.platforms = const ["N/A"],
     this.screenshotUrls = const [],
-    this.similarGames = const [],
     this.summary = "",
     this.storyline = "",
     this.themes = const ["N/A"],
@@ -123,10 +121,6 @@ class Game {
             ? List<String>.from(
                 json['screenshots'].map((screenshot) => screenshot['url']))
             : const [],
-        similarGames: json['similar_games'] != null
-            ? List<SimilarGame>.from(
-                json['similar_games'].map((game) => SimilarGame.fromJson(game)))
-            : const [],
         summary: json['summary'] ?? "",
         storyline: json['storyline'] ?? "",
         themes: json['themes'] != null
@@ -146,22 +140,6 @@ class Game {
         summary: "Error loading game details.",
       );
     }
-  }
-}
-
-class SimilarGame {
-  final int id;
-  final String name;
-  final String coverUrl;
-
-  SimilarGame({required this.id, required this.name, this.coverUrl = ""});
-
-  factory SimilarGame.fromJson(Map<String, dynamic> json) {
-    return SimilarGame(
-      id: json['id'],
-      name: json['name'],
-      coverUrl: json['cover']?['url'] ?? "",
-    );
   }
 }
 
@@ -232,8 +210,89 @@ class ComicVineService {
 
     if (response.statusCode == 200) {
       final List<dynamic> jsonResponse = jsonDecode(response.body);
-      print(jsonResponse);
       return jsonResponse.map((json) => Comic.fromJson(json)).toList();
+    } else {
+      throw Exception('Failed to load comics: ${response.statusCode}');
+    }
+  }
+}
+
+class Movie {
+  final String image;
+  final String title;
+  final String year;
+  final String runtime;
+  final String genre;
+  final String metaScore;
+  final String overview;
+  final String director;
+  final List<String> stars;
+
+  Movie({
+    this.image = defaultUrl,
+    this.title = "default title",
+    this.year = "N/A",
+    this.runtime = "N/A",
+    this.genre = "N/A",
+    this.metaScore = "N/A",
+    this.overview = "N/A",
+    this.director = "N/A",
+    this.stars = const ["N/A"],
+  });
+
+  // Factory constructor to create a Movie from JSON
+  factory Movie.fromJson(Map<String, dynamic> json) {
+    try {
+      return Movie(
+        image: json['image'].replaceAll(
+                "._V1_UX67_CR0,0,67,98_AL_", "._V1_SY500_CR0,0,333,500_") ??
+            defaultUrl,
+        title: json['title'] ?? 'Unknown Title',
+        year: json['year'] ?? 'Unknown Year',
+        runtime: json['runtime'] ?? 'Unknown Runtime',
+        genre: json['genre'] ?? 'Unknown Genre',
+        metaScore: json['meta_score'] ?? 'N/A',
+        overview: json['overview'] ?? 'No overview available.',
+        director: json['director'] ?? 'Unknown Director',
+        stars: List<String>.from(json['stars'] ?? []),
+      );
+    } catch (e) {
+      print("Error converting JSON to Movie: $e");
+      print("Problematic JSON: ${jsonEncode(json)}");
+
+      // Return a default Movie object on error
+      return Movie(
+        image:
+            "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTfE_qrYMBZ_JB8om-34WGaZARhpX26yWRttqIDvn4_7l--UzX8mxKcPrc59IcvTpEA_G8gPA",
+        title: 'Batman the dark knight',
+        year: '2008',
+        runtime: '152 min',
+        genre: 'best',
+        metaScore: '100',
+        overview:
+            'When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, Batman must accept one of the greatest psychological and physical tests of his ability to fight injustice.',
+        director: 'Christopher Nolan',
+        stars: [
+          "Christian Bale",
+          "Heath Ledger",
+          "Aaron Eckhart",
+          "Michael Caine"
+        ],
+      );
+    }
+  }
+}
+
+class ImdbService {
+  ImdbService();
+
+  Future<List<Movie>> getComics() async {
+    final url = Uri.parse('https://menade.me/api/movies');
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonResponse = jsonDecode(response.body);
+      return jsonResponse.map((json) => Movie.fromJson(json)).toList();
     } else {
       throw Exception('Failed to load comics: ${response.statusCode}');
     }

@@ -10,27 +10,35 @@ class MediaItem {
       {required this.title, required this.description, required this.imageUrl});
 }
 
-class MediaItemWidget extends StatelessWidget {
+class MediaItemWidget extends StatefulWidget {
   final MediaItem mediaItem;
 
   const MediaItemWidget({super.key, required this.mediaItem});
 
   @override
+  _MediaItemWidgetState createState() => _MediaItemWidgetState();
+}
+
+class _MediaItemWidgetState extends State<MediaItemWidget> {
+  bool isFavorite = false; // Track if the item is favorited
+
+  @override
   Widget build(BuildContext context) {
     Widget detailPage;
-    switch (mediaItem.runtimeType) {
+    switch (widget.mediaItem.runtimeType) {
       case ComicItem:
-        detailPage = ComicDetailPage(mediaItem: mediaItem as ComicItem);
+        detailPage = ComicDetailPage(mediaItem: widget.mediaItem as ComicItem);
         break;
-      //case MovieItem:
-      //  detailPage = MovieDetailPage(mediaItem: mediaItem as MovieItem);
-      //  break;
-      //case GameItem:
-      //  detailPage = GameDetailPage(mediaItem: mediaItem as GameItem);
-      //  break;
+      case MovieItem:
+        detailPage = MovieDetailPage(mediaItem: widget.mediaItem as MovieItem);
+        break;
+      case GameItem:
+        detailPage = GameDetailPage(gameItem: widget.mediaItem as GameItem);
+        break;
       default:
-        detailPage = DetailPage(mediaItem: mediaItem);
+        detailPage = DetailPage(mediaItem: widget.mediaItem);
     }
+
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -56,24 +64,41 @@ class MediaItemWidget extends StatelessWidget {
             ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                  mediaItem.imageUrl.replaceAll("t_thumb", "t_cover_big"),
-                  width: 100,
-                  height: 100,
-                  fit: BoxFit.cover),
+                widget.mediaItem.imageUrl.replaceAll("t_thumb", "t_cover_big"),
+                width: 100,
+                height: 100,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback widget if the image fails to load
+                  return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+                },
+              ),
             ),
             const SizedBox(width: 10),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(mediaItem.title,
+                  Text(widget.mediaItem.title,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 5),
-                  Text(mediaItem.description,
+                  Text(widget.mediaItem.description,
                       maxLines: 2, overflow: TextOverflow.ellipsis),
                 ],
               ),
+            ),
+            // Favorite Button
+            IconButton(
+              icon: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : Colors.grey,
+              ),
+              onPressed: () {
+                setState(() {
+                  isFavorite = !isFavorite; // Toggle the favorite state
+                });
+              },
             ),
           ],
         ),
@@ -101,6 +126,10 @@ class DetailPage extends StatelessWidget {
                 mediaItem.imageUrl.replaceAll("t_thumb", "t_cover_big"),
                 width: 264,
                 height: 352,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback widget if the image fails to load
+                  return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+                },
               ),
               const SizedBox(height: 10),
               Text(mediaItem.title,
@@ -172,6 +201,10 @@ class ComicDetailPage extends StatelessWidget {
                 mediaItem.imageUrl.replaceAll("square_avatar", "scale_small"),
                 width: 264,
                 height: 352,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback widget if the image fails to load
+                  return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+                },
               ),
               const SizedBox(height: 10),
 
@@ -200,6 +233,255 @@ class ComicDetailPage extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class MovieItem extends MediaItem {
+  final String year;
+  final String runtime;
+  final String genre;
+  final String metaScore;
+  final String director;
+  final List<String> stars;
+
+  MovieItem({
+    required super.title,
+    required super.description,
+    required super.imageUrl,
+    this.year = "Unknown Year",
+    this.runtime = "Unknown Runtime",
+    this.genre = "Unknown Genre",
+    this.metaScore = "N/A",
+    this.director = "Unknown Director",
+    this.stars = const [],
+  });
+}
+
+class MovieDetailPage extends StatelessWidget {
+  final MovieItem mediaItem;
+
+  const MovieDetailPage({super.key, required this.mediaItem});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(mediaItem.title),
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Movie poster
+              Image.network(
+                mediaItem.imageUrl,
+                width: 264,
+                height: 352,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback widget if the image fails to load
+                  return Icon(Icons.broken_image, size: 50, color: Colors.grey);
+                },
+              ),
+              const SizedBox(height: 10),
+
+              // Title
+              Text(
+                mediaItem.title,
+                style:
+                    const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+
+              // Overview/Description
+              Text(
+                mediaItem.description,
+                style: const TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 10),
+
+              // Additional Details
+              Text("Year: ${mediaItem.year}"),
+              Text("Runtime: ${mediaItem.runtime}"),
+              Text("Genre: ${mediaItem.genre}"),
+              Text("Director: ${mediaItem.director}"),
+              Text("Meta Score: ${mediaItem.metaScore}"),
+              const SizedBox(height: 10),
+
+              // Stars
+              Text(
+                "Stars:",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              for (var star in mediaItem.stars)
+                Text(
+                  star,
+                  style: const TextStyle(fontSize: 14),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class GameItem extends MediaItem {
+  final int id;
+  final String coverUrl;
+  final String firstReleaseDate;
+  final List<String> genres;
+  final List<String> involvedCompanies;
+  final List<String> keywords;
+  final List<String> platforms;
+  final List<String> screenshotUrls;
+  final String summary;
+  final String storyline;
+  final List<String> themes;
+  final double totalRating;
+  final int totalRatingCount;
+
+  GameItem({
+    required this.id,
+    required String title,
+    required String description,
+    required String imageUrl,
+    this.coverUrl = "defaultUrl",
+    this.firstReleaseDate = "2003-06-14",
+    this.genres = const ["N/A"],
+    this.involvedCompanies = const ["N/A"],
+    this.keywords = const ["N/A"],
+    this.platforms = const ["N/A"],
+    this.screenshotUrls = const [],
+    this.summary = "",
+    this.storyline = "",
+    this.themes = const ["N/A"],
+    this.totalRating = -1.0,
+    this.totalRatingCount = -1,
+  }) : super(title: title, description: description, imageUrl: imageUrl);
+}
+
+class GameDetailPage extends StatelessWidget {
+  final GameItem gameItem;
+
+  const GameDetailPage({super.key, required this.gameItem});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 250,
+            pinned: true,
+            flexibleSpace: FlexibleSpaceBar(
+              background: Image.network(
+                gameItem.imageUrl,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SliverList(
+            delegate: SliverChildListDelegate([
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Title and rating
+                    Text(
+                      gameItem.title,
+                      style: const TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Rating: ${gameItem.totalRating}",
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      "Platforms: ${gameItem.platforms.join(", ")}",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Tab selector
+                    DefaultTabController(
+                      length: 3,
+                      child: Column(
+                        children: [
+                          TabBar(
+                            tabs: [
+                              Tab(text: "Description"),
+                              Tab(text: "Details"),
+                              Tab(text: "Screenshots"),
+                            ],
+                          ),
+                          Container(
+                            height: 300, // Adjust the height accordingly
+                            child: TabBarView(
+                              children: [
+                                // Description Tab
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Text(gameItem.summary.isNotEmpty
+                                      ? gameItem.summary
+                                      : gameItem.storyline),
+                                ),
+                                // Details Tab
+                                Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                          "Genres: ${gameItem.genres.join(", ")}"),
+                                      Text(
+                                          "Involved Companies: ${gameItem.involvedCompanies.join(", ")}"),
+                                      Text(
+                                          "Keywords: ${gameItem.keywords.join(", ")}"),
+                                    ],
+                                  ),
+                                ),
+                                // Screenshots Tab with Swipe
+                                gameItem.screenshotUrls.isNotEmpty
+                                    ? SizedBox(
+                                        height: 200, // Adjust as needed
+                                        child: PageView.builder(
+                                          itemCount:
+                                              gameItem.screenshotUrls.length,
+                                          itemBuilder: (context, index) {
+                                            return Image.network(
+                                              gameItem.screenshotUrls[index]
+                                                  .replaceAll(
+                                                      "t_thumb", "t_cover_big"),
+                                              fit: BoxFit.cover,
+                                            );
+                                          },
+                                        ),
+                                      )
+                                    : Center(
+                                        child:
+                                            Text("No screenshots available")),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ]),
+          ),
+        ],
       ),
     );
   }
