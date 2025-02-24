@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import './utils.dart';
+import './pages.dart';
 
 List<MediaItem> favoriteMediaItems = [];
 
@@ -22,7 +23,17 @@ class MediaItemWidget extends StatefulWidget {
 }
 
 class _MediaItemWidgetState extends State<MediaItemWidget> {
-  bool get isFavorite => favoriteMediaItems.contains(widget.mediaItem);
+  bool get isFavorite => favoriteMediaNotifier.value.contains(widget.mediaItem);
+
+  void _toggleFavorite() {
+    if (isFavorite) {
+      favoriteMediaNotifier.value = List.from(favoriteMediaNotifier.value)
+        ..remove(widget.mediaItem);
+    } else {
+      favoriteMediaNotifier.value = List.from(favoriteMediaNotifier.value)
+        ..add(widget.mediaItem);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,16 +56,14 @@ class _MediaItemWidgetState extends State<MediaItemWidget> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(
-            builder: (context) => detailPage,
-          ),
+          MaterialPageRoute(builder: (context) => detailPage),
         );
       },
       child: Container(
         padding: const EdgeInsets.all(8.0),
         margin: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 10.0),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: lighterThemeColor,
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
             BoxShadow(color: Colors.grey.withOpacity(0.2), blurRadius: 5)
@@ -71,7 +80,6 @@ class _MediaItemWidgetState extends State<MediaItemWidget> {
                 height: 100,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
-                  // Fallback widget if the image fails to load
                   return Icon(Icons.broken_image, size: 50, color: Colors.grey);
                 },
               ),
@@ -90,7 +98,6 @@ class _MediaItemWidgetState extends State<MediaItemWidget> {
                 ],
               ),
             ),
-            // Favorite Button
             IconButton(
               icon: Icon(
                 isFavorite ? Icons.favorite : Icons.favorite_border,
@@ -98,12 +105,7 @@ class _MediaItemWidgetState extends State<MediaItemWidget> {
               ),
               onPressed: () {
                 setState(() {
-                  // Toggle the global favorite state
-                  if (isFavorite) {
-                    favoriteMediaItems.remove(widget.mediaItem);
-                  } else {
-                    favoriteMediaItems.add(widget.mediaItem);
-                  }
+                  _toggleFavorite(); // Ensure the widget rebuilds with the updated favorite status
                 });
               },
             ),
@@ -122,8 +124,7 @@ class DetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-          title: Text(mediaItem.title), backgroundColor: Colors.deepPurple),
+      appBar: AppBar(title: Text(mediaItem.title), backgroundColor: themeColor),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: SingleChildScrollView(
@@ -196,7 +197,7 @@ class ComicDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(mediaItem.title),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: themeColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -276,7 +277,7 @@ class MovieDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(mediaItem.title),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: themeColor,
       ),
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -424,6 +425,8 @@ class GameDetailPage extends StatelessWidget {
                       child: Column(
                         children: [
                           TabBar(
+                            unselectedLabelColor: Colors.grey[400],
+                            labelColor: themeColor,
                             tabs: [
                               Tab(text: "Description"),
                               Tab(text: "Details"),
@@ -467,8 +470,8 @@ class GameDetailPage extends StatelessWidget {
                                           itemBuilder: (context, index) {
                                             return Image.network(
                                               gameItem.screenshotUrls[index]
-                                                  .replaceAll(
-                                                      "t_thumb", "t_cover_big"),
+                                                  .replaceAll("t_thumb",
+                                                      "t_screenshot_huge"),
                                               fit: BoxFit.cover,
                                             );
                                           },

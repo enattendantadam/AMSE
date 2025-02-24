@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:tp1/utils.dart';
 import '../sectionItems.dart';
+
+ValueNotifier<List<MediaItem>> favoriteMediaNotifier = ValueNotifier([]);
+const Color themeColor = Color.fromARGB(255, 23, 76, 141) as Color;
+Color lighterThemeColor = themeColor.withValues(alpha: 0.5);
 
 class MainPage extends StatefulWidget {
   final int initialIndex;
@@ -30,12 +35,20 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      body: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+          image: AssetImage('assets/dice1.jpg'),
+          fit: BoxFit.none,
+          repeat: ImageRepeat.repeat,
+        )),
+        child: IndexedStack(
+          index: _selectedIndex,
+          children: _pages,
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: themeColor,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -46,19 +59,19 @@ class _MainPageState extends State<MainPage> {
           BottomNavigationBarItem(
               icon: Icon(Icons.movie),
               label: 'Movies',
-              backgroundColor: Colors.deepPurple),
+              backgroundColor: themeColor),
           BottomNavigationBarItem(
               icon: Icon(Icons.videogame_asset),
               label: 'Games',
-              backgroundColor: Colors.deepPurple),
+              backgroundColor: themeColor),
           BottomNavigationBarItem(
               icon: Icon(Icons.book),
               label: 'Comics',
-              backgroundColor: Colors.deepPurple),
+              backgroundColor: themeColor),
           BottomNavigationBarItem(
               icon: Icon(Icons.favorite),
-              label: 'Comics',
-              backgroundColor: Colors.deepPurple),
+              label: 'Favorites',
+              backgroundColor: themeColor),
         ],
       ),
     );
@@ -75,12 +88,12 @@ class SectionPage extends StatefulWidget {
 }
 
 class _SectionPageState extends State<SectionPage> {
-  List<MediaItem> mediaItems = []; // Initialize as empty
+  List<MediaItem> mediaItems = [];
 
   @override
   void initState() {
     super.initState();
-    _initializeMediaItems(); // Call initialization method
+    _initializeMediaItems();
   }
 
   void _initializeMediaItems() {
@@ -90,13 +103,11 @@ class _SectionPageState extends State<SectionPage> {
         description: "A thrilling adventure about...",
         imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
       ),
-      // You can add more MediaItems here.
     ];
   }
 
   void _refresh() {
     setState(() {
-      // Refresh logic (if any) – here we simply reinitialize.
       _initializeMediaItems();
     });
   }
@@ -106,39 +117,50 @@ class _SectionPageState extends State<SectionPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        backgroundColor: Colors.deepPurple,
+        titleTextStyle: TextStyle(
+            color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+        backgroundColor: themeColor,
+        centerTitle: true,
         actions: [
-          // Button to navigate to the Favorites page.
           IconButton(
             icon: Icon(Icons.favorite),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => FavoritePage(title: "Favorites"),
-                ),
+                MaterialPageRoute(builder: (context) => aboutPage(context)),
               );
             },
           )
         ],
       ),
-      body: Stack(
-        children: [
-          ListView.builder(
-            itemCount: mediaItems.length,
-            itemBuilder: (context, index) {
-              return MediaItemWidget(mediaItem: mediaItems[index]);
-            },
-          ),
-          Positioned(
-            right: 10,
-            bottom: 25,
-            child: FloatingActionButton(
-              onPressed: _refresh,
-              child: Icon(Icons.refresh),
+      body: Container(
+        decoration: BoxDecoration(
+            image: DecorationImage(
+          image: AssetImage('assets/dice1.jpg'),
+          fit: BoxFit.none,
+          repeat: ImageRepeat.repeat,
+        )),
+        child: Stack(
+          children: [
+            ListView.builder(
+              itemCount: mediaItems.length,
+              itemBuilder: (context, index) {
+                return MediaItemWidget(mediaItem: mediaItems[index]);
+              },
             ),
-          )
-        ],
+            Positioned(
+              right: 10,
+              bottom: 25,
+              child: FloatingActionButton(
+                backgroundColor: themeColor.withValues(red: 0.3),
+                onPressed: _refresh,
+                child: Icon(
+                  Icons.refresh,
+                ),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -154,50 +176,116 @@ class FavoritePage extends StatefulWidget {
 }
 
 class _FavoritePageState extends State<FavoritePage> {
-  List<MediaItem> favoriteItems = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadFavorites();
-  }
-
-  void _loadFavorites() {
-    setState(() {
-      // Copy the current favorites from the global list.
-      favoriteItems = List.from(favoriteMediaItems);
-    });
-  }
-
-  void _refresh() {
-    _loadFavorites();
-  }
+  final List<String> categories = ['All', 'Movies', 'Games', 'Comics'];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
-        backgroundColor: Colors.deepPurple,
-      ),
-      body: Stack(
-        children: [
-          ListView.builder(
-            itemCount: favoriteItems.length,
-            itemBuilder: (context, index) {
-              return MediaItemWidget(mediaItem: favoriteItems[index]);
+        titleTextStyle: TextStyle(
+            color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+        centerTitle: true,
+        backgroundColor: themeColor,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.info_outline),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => aboutPage(context)),
+              );
             },
           ),
-          Positioned(
-            right: 10,
-            bottom: 25,
-            child: FloatingActionButton(
-              onPressed: _refresh,
-              child: Icon(Icons.refresh),
-            ),
-          )
         ],
       ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/dice1.jpg'),
+            fit: BoxFit.none,
+            repeat: ImageRepeat.repeat,
+          ),
+        ),
+        child: DefaultTabController(
+          length: 4,
+          child: Column(
+            children: [
+              TabBar(
+                unselectedLabelColor: Colors.grey[400],
+                labelColor: Colors.blue,
+                tabs: [
+                  Tab(text: "All"),
+                  Tab(text: "Movies"),
+                  Tab(text: "Games"),
+                  Tab(
+                    text: "Comics",
+                  )
+                ],
+              ),
+              Container(
+                height: 300,
+                child: TabBarView(
+                  children: [
+                    // "All" Tab - Display all favorites
+                    _buildFavoriteTab("All"),
+
+                    // Movie Tab
+                    _buildFavoriteTab("Movies"),
+
+                    // Game Tab
+                    _buildFavoriteTab("Games"),
+
+                    // Comic Tab
+                    _buildFavoriteTab("Comics"),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget to build each favorite tab
+  Widget _buildFavoriteTab(String category) {
+    return ValueListenableBuilder<List<MediaItem>>(
+      valueListenable: favoriteMediaNotifier,
+      builder: (context, favoriteItems, child) {
+        List<MediaItem> filteredItems;
+
+        if (category == "All") {
+          filteredItems = favoriteItems;
+        } else {
+          switch (category) {
+            case "Movies":
+              filteredItems =
+                  favoriteItems.where((item) => item is MovieItem).toList();
+              break;
+            case "Games":
+              filteredItems =
+                  favoriteItems.where((item) => item is GameItem).toList();
+              break;
+            case "Comics":
+              filteredItems =
+                  favoriteItems.where((item) => item is ComicItem).toList();
+              break;
+            default:
+              filteredItems = favoriteItems;
+              break;
+          }
+        }
+
+        return filteredItems.isEmpty
+            ? Center(child: Text("No favorites in this category."))
+            : ListView.builder(
+                itemCount: filteredItems.length,
+                itemBuilder: (context, index) {
+                  return MediaItemWidget(mediaItem: filteredItems[index]);
+                },
+              );
+      },
     );
   }
 }
@@ -215,19 +303,17 @@ class _VideoGamePageState extends _SectionPageState {
   @override
   void initState() {
     super.initState();
-    _fetchGames(); // Call fetch games in initState
+    _fetchGames();
   }
 
   Future<void> _fetchGames() async {
     try {
       final igdbService = IgdbService();
       games = await igdbService.getGames();
-      _updateMediaItems(); // Update mediaItems after fetching
+      _updateMediaItems();
     } catch (e) {
       print('Error fetching games: $e');
-      //ScaffoldMessenger.of(context).showSnackBar(
-      //  SnackBar(content: Text('Error loading games: $e')),
-      //);
+
       games = [
         Game(
           id: 0,
@@ -270,7 +356,6 @@ class _VideoGamePageState extends _SectionPageState {
 
   @override
   Future<void> _refresh() async {
-    // Override the refreshData method
     await _fetchGames(); // Fetch new games
   }
 }
@@ -288,19 +373,16 @@ class _ComicsPageState extends _SectionPageState {
   @override
   void initState() {
     super.initState();
-    _fetchComics(); // Call fetch games in initState
+    _fetchComics();
   }
 
   Future<void> _fetchComics() async {
     try {
       final comicVineService = ComicVineService();
       comics = await comicVineService.getComics();
-      _updateMediaItems(); // Update mediaItems after fetching
+      _updateMediaItems();
     } catch (e) {
       print('Error fetching comics: $e');
-      //ScaffoldMessenger.of(context).showSnackBar(
-      //  SnackBar(content: Text('Error loading games: $e')),
-      //);
       comics = [
         Comic(
           id: 0,
@@ -336,8 +418,7 @@ class _ComicsPageState extends _SectionPageState {
 
   @override
   Future<void> _refresh() async {
-    // Override the refreshData method
-    await _fetchComics(); // Fetch new games
+    await _fetchComics();
   }
 }
 
@@ -354,19 +435,17 @@ class _MoviesPageState extends _SectionPageState {
   @override
   void initState() {
     super.initState();
-    _fetchMovies(); // Call fetch games in initState
+    _fetchMovies();
   }
 
   Future<void> _fetchMovies() async {
     try {
       final imdbService = ImdbService();
       movies = await imdbService.getComics();
-      _updateMediaItems(); // Update mediaItems after fetching
+      _updateMediaItems();
     } catch (e) {
       print('Error fetching movies: $e');
-      //ScaffoldMessenger.of(context).showSnackBar(
-      //  SnackBar(content: Text('Error loading games: $e')),
-      //);
+
       movies = [
         Movie(
           image:
@@ -412,7 +491,97 @@ class _MoviesPageState extends _SectionPageState {
 
   @override
   Future<void> _refresh() async {
-    // Override the refreshData method
-    await _fetchMovies(); // Fetch new games
+    await _fetchMovies();
   }
+}
+
+Widget aboutPage(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text("About"),
+      titleTextStyle: TextStyle(
+          color: Colors.white, fontSize: 20, fontWeight: FontWeight.w600),
+      centerTitle: true,
+      backgroundColor: themeColor,
+    ),
+    body: SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(17.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: NetworkImage(
+                    "https://img.icons8.com/color/512/flutter.png"),
+                backgroundColor: Colors.transparent,
+              ),
+            ),
+            SizedBox(height: 20),
+
+            Center(
+              child: Text(
+                "Flutter TP1 app",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(height: 5),
+            Center(
+              child: Text(
+                "Version 1.0.0",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+            ),
+            SizedBox(height: 20),
+
+            // App Description
+            Text(
+              "This app generates random movies, games or comics, through the use of 3 different APIs"
+              "it is then possible to open a page with more details about each one."
+              "The Api used were the IMDB api, the IGDB API and ComicVine API",
+              style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 20),
+
+            Divider(),
+
+            Text(
+              "Developed by",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 5),
+            Text("Adam Menade", style: TextStyle(fontSize: 16)),
+            Text("adam.menade@gmail.com",
+                style: TextStyle(fontSize: 16, color: Colors.blue)),
+            SizedBox(height: 20),
+
+            Divider(),
+
+            Text(
+              "More Information",
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            ListTile(
+              leading: Icon(Icons.web, color: Colors.red[300]),
+              title: Text(
+                "Unrelated website also made by me (it was used as a webserver to hold the api keys)",
+              ),
+              onTap: () => launchUrl(Uri.parse("https://menade.me")),
+              textColor: Colors.grey[400],
+            ),
+            ListTile(
+                leading: Icon(
+                  Icons.code,
+                  color: Colors.red[300],
+                ),
+                title: Text("GitHub Repository"),
+                onTap: () => launchUrl(
+                    Uri.parse("https://github.com/enattendantadam/AMSE")),
+                textColor: Colors.grey[400]),
+          ],
+        ),
+      ),
+    ),
+  );
 }

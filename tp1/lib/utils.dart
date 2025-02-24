@@ -240,7 +240,6 @@ class Movie {
     this.stars = const ["N/A"],
   });
 
-  // Factory constructor to create a Movie from JSON
   factory Movie.fromJson(Map<String, dynamic> json) {
     try {
       return Movie(
