@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import './utils.dart';
 
+List<MediaItem> favoriteMediaItems = [];
+
 class MediaItem {
   final String title;
   final String description;
@@ -20,7 +22,7 @@ class MediaItemWidget extends StatefulWidget {
 }
 
 class _MediaItemWidgetState extends State<MediaItemWidget> {
-  bool isFavorite = false; // Track if the item is favorited
+  bool get isFavorite => favoriteMediaItems.contains(widget.mediaItem);
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +98,12 @@ class _MediaItemWidgetState extends State<MediaItemWidget> {
               ),
               onPressed: () {
                 setState(() {
-                  isFavorite = !isFavorite; // Toggle the favorite state
+                  // Toggle the global favorite state
+                  if (isFavorite) {
+                    favoriteMediaItems.remove(widget.mediaItem);
+                  } else {
+                    favoriteMediaItems.add(widget.mediaItem);
+                  }
                 });
               },
             ),

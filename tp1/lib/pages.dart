@@ -18,6 +18,7 @@ class _MainPageState extends State<MainPage> {
     MoviePage(),
     VideoGamePage(),
     ComicsPage(),
+    FavoritePage(title: "favorites")
   ];
 
   @override
@@ -34,6 +35,7 @@ class _MainPageState extends State<MainPage> {
         children: _pages,
       ),
       bottomNavigationBar: BottomNavigationBar(
+        backgroundColor: Colors.deepPurple,
         currentIndex: _selectedIndex,
         onTap: (index) {
           setState(() {
@@ -41,9 +43,22 @@ class _MainPageState extends State<MainPage> {
           });
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Movies'),
-          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Games'),
-          BottomNavigationBarItem(icon: Icon(Icons.movie), label: 'Comics'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.movie),
+              label: 'Movies',
+              backgroundColor: Colors.deepPurple),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.videogame_asset),
+              label: 'Games',
+              backgroundColor: Colors.deepPurple),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.book),
+              label: 'Comics',
+              backgroundColor: Colors.deepPurple),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite),
+              label: 'Comics',
+              backgroundColor: Colors.deepPurple),
         ],
       ),
     );
@@ -75,16 +90,87 @@ class _SectionPageState extends State<SectionPage> {
         description: "A thrilling adventure about...",
         imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
       ),
-      MediaItem(
-        title: "Example Item 2",
-        description: "A fascinating drama about...",
-        imageUrl: "https://i.ebayimg.com/images/g/YcgAAOSwumRkjmNX/s-l400.jpg",
-      ),
+      // You can add more MediaItems here.
     ];
   }
 
   void _refresh() {
-    return;
+    setState(() {
+      // Refresh logic (if any) – here we simply reinitialize.
+      _initializeMediaItems();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.title),
+        backgroundColor: Colors.deepPurple,
+        actions: [
+          // Button to navigate to the Favorites page.
+          IconButton(
+            icon: Icon(Icons.favorite),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => FavoritePage(title: "Favorites"),
+                ),
+              );
+            },
+          )
+        ],
+      ),
+      body: Stack(
+        children: [
+          ListView.builder(
+            itemCount: mediaItems.length,
+            itemBuilder: (context, index) {
+              return MediaItemWidget(mediaItem: mediaItems[index]);
+            },
+          ),
+          Positioned(
+            right: 10,
+            bottom: 25,
+            child: FloatingActionButton(
+              onPressed: _refresh,
+              child: Icon(Icons.refresh),
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+class FavoritePage extends StatefulWidget {
+  final String title;
+
+  const FavoritePage({super.key, required this.title});
+
+  @override
+  _FavoritePageState createState() => _FavoritePageState();
+}
+
+class _FavoritePageState extends State<FavoritePage> {
+  List<MediaItem> favoriteItems = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFavorites();
+  }
+
+  void _loadFavorites() {
+    setState(() {
+      // Copy the current favorites from the global list.
+      favoriteItems = List.from(favoriteMediaItems);
+    });
+  }
+
+  void _refresh() {
+    _loadFavorites();
   }
 
   @override
@@ -94,22 +180,24 @@ class _SectionPageState extends State<SectionPage> {
         title: Text(widget.title),
         backgroundColor: Colors.deepPurple,
       ),
-      body: Stack(children: [
-        ListView.builder(
-          itemCount: mediaItems.length,
-          itemBuilder: (context, index) {
-            return MediaItemWidget(mediaItem: mediaItems[index]);
-          },
-        ),
-        Positioned(
-          right: 10,
-          bottom: 25,
-          child: FloatingActionButton(
-            onPressed: _refresh,
-            child: Icon(Icons.refresh),
+      body: Stack(
+        children: [
+          ListView.builder(
+            itemCount: favoriteItems.length,
+            itemBuilder: (context, index) {
+              return MediaItemWidget(mediaItem: favoriteItems[index]);
+            },
           ),
-        )
-      ]),
+          Positioned(
+            right: 10,
+            bottom: 25,
+            child: FloatingActionButton(
+              onPressed: _refresh,
+              child: Icon(Icons.refresh),
+            ),
+          )
+        ],
+      ),
     );
   }
 }
